@@ -1,17 +1,32 @@
 # ai-content-creator
-This project's use is generating video content, in both short- and longform videos, using Reddit posts from a variety of subreddits.
+Automatically generate videos by converting Reddit posts into AI-narrated videos with background gameplay.
 
 ## Description
-This AI content creator uses tkinter for a user-friendly interface, then fetches Reddit posts from a picked subreddits (with many
-more options as well), then generates an mp3 file using that text, then it transcribes that mp3 file to create the subtitles with
-ffmpeg and moviepy. Finally, it combines Minecraft background footage with the subtitles to create a finalized mp4 file. It's use
-is mostly to help with quick content generation, making use of Reddit's API and various other tools.
+- User-friendly GUI using tkinter
+- Fetch Reddit Posts from chosen subreddit using API
+- Generate mp3 file using edge-tts
+- Transcribe using OpenAI's faster-whisper
+- Burn subtitles into background footage with ffmpeg and moviepy
 
 ## Getting Started
+
 ### Dependencies
-The dependencies are all written out in the requirements.txt file and can be imported easily using `pip install requirements.txt`.
+The dependencies are all written out in the requirements.txt file and can be imported easily using `pip install -r requirements.txt`.
 You should have Python 3.x and above. OS does not matter, although this was designed on Windows 10/11, so it might not work on
-other OS systems.
+other OS systems. You can find the background footage used at [this](https://www.google.com) Google Drive link.
+
+Additionally, you need to create a Reddit API X and enter it into the `r` variable at the bottom of the `reddit_fetch.py`
+file. This will require a client id, a client secret, and a user agent. A user agent can be any string, but it should follow some
+basic formatting and should mention the name of what you're using as well as your Reddit account name (formatted as `r/userx`).
+To get the client id and client secret you need to do as follows:
+  1. Head to [this](https://www.reddit.com/prefs/apps) link and click "create an app" (or create another app if you already have one).
+  2. Input the name of the application into the "name" field and mark the "script" box.
+  3. Enter a short description of your app (not necessary, but recommended).
+  4. For the redirect uri (not URL!) you should just enter `https://localhost` or use a website to contact you (twitter, own website, etc.)
+  5. Complete the captcha and click "Create App"
+
+For additional information, refer to [Reddit's API documentation](https://www.reddit.com/dev/api/).
+
 
 ### Installing
 You can download my program by downloading all of the files and installing the dependencies as detailed above. You should enter
@@ -32,4 +47,4 @@ Tester: Litschi
 This project is licensed under the [MIT] License - see the LICENSE.md file for details
 
 ### Acknowledgments
-Thanks to ChatGPT for debugging help and YouTube/Google for needed tutorials on ffmpeg and moviepy.
+Thanks to ChatGPT/Claude for debugging help and YouTube/Google for needed tutorials on ffmpeg and moviepy.
