@@ -1,0 +1,4 @@
+edge-tts==7.2.3
+faster-whisper==1.2.0
+ffmpeg==1.4
+moviepy==1.0.3
