@@ -11,9 +11,10 @@ Automatically generate videos by converting Reddit posts into AI-narrated videos
 ## Getting Started
 
 ### Dependencies
-The dependencies are all written out in the requirements.txt file and can be imported easily using `pip install -r requirements.txt`.
-You should have Python 3 and above. OS does not matter, although this was designed on Windows 10/11, so it might not work on
-other OS systems. You can find the background footage used at [this](https://drive.google.com/drive/folders/1r6vmfbwchYi-t-6i1qfPk_6XSZWY_u3X?usp=drive_link) Google Drive link.
+- Python 3.8+ (recommended).
+- [FFmpeg](https://ffmpeg.org/download.html) must be installed and added to PATH.
+- Python packages listed in requirements.txt: `pip install -r requirements.txt`
+- Download bg footage at [this](https://drive.google.com/drive/folders/1r6vmfbwchYi-t-6i1qfPk_6XSZWY_u3X?usp=drive_link) Google Drive link.
 
 Additionally, you need to create Reddit API credentials and enter it into the `Reddit Info` section in the settings tab.
 This will require a client id, a client secret, and a user agent. A user agent can be any string, but it should follow some
@@ -39,19 +40,13 @@ If you need any help, please refer to this repo's discussion page.
 
 ### Settings
 After installation, you can configure the following settings:
-- Subreddit (12 choices, 8 for longform and 4 for shortform)
+- Subreddit (AmItheAsshole, AmIOverreacting, confession, entitledparents, EntitledPeople, maliciouscompliance, relationship_advice, and unpopularopinion for longform and AskReddit, dadjokes, jokes, and Showerthoughts for shorts)
 - Voice Gender (male/female)
 - Voice Accent (American/British/Canadian/Irish/Australian)
 - Amount of comments picked (0 - 25 for shorts, 0 - 100 for longform)
 - Amount of posts picked (1 - 10 for shorts, 1 - 100 for longform)
 - Output folder for video, audio files and `settings.json`
 - Reddit API credentials
-
-### Authors
-Project Manager: Litschi
-Team Lead: Litschi
-Computer Programmer: Litschi
-Tester: Litschi
 
 ### License
 This project is licensed under the [MIT] License - see the LICENSE.md file for details
