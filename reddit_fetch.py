@@ -1,7 +1,8 @@
 import json
+import os
 import praw
 
-filename = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/settings.json"
+filename = os.path.join(os.path.dirname(__file__), "/settings.json")
 
 def load_settings():
     with open(filename, "r") as f:
@@ -13,7 +14,13 @@ def load_settings():
 
         return comment_amt, post_amt, subreddit
 
-def fetch_posts(status):
+def fetch_posts(status, client_id, client_secret, user_agent):
+    r = praw.Reddit(
+        client_id=client_id,
+        client_secret=client_secret,
+        user_agent=user_agent
+    )
+    
     titles = []
     descriptions = []
     comments = []
@@ -24,7 +31,7 @@ def fetch_posts(status):
     if status:
         status.config(text="Fetching posts")
 
-    for submission in r.subreddit(subreddit).top(limit=int(post_amt)+100, time_filter="day"):
+    for submission in r.subreddit(subreddit).top(limit=int(post_amt)+10, time_filter="day"):
         if submission.stickied or submission.over_18 or hasattr(submission, 'post_hint') and submission.post_hint == 'image':
             continue
 
@@ -52,9 +59,3 @@ def fetch_posts(status):
     print(f'Fetched {len(titles)} posts from subreddit: "{subreddit}"')
 
     return comments, descriptions, titles
-
-r = praw.Reddit(
-    client_id="client-id",
-    client_secret="client-secret",
-    user_agent="user-agent",
-)
