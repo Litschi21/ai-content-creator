@@ -16,7 +16,8 @@ state = {
     "post_amt": 1,
     "comment_amt": 0,
     "comment_to": 10,
-    "post_to": 10
+    "post_to": 10,
+    "vid_amt": 1,
 }
 
 
@@ -25,7 +26,7 @@ class ControlPanel(tk.Tk):
         # Initialize Tkinter Window
         super().__init__()
         self.title("Control Panel")
-        self.geometry("800x600")
+        self.geometry("800x800")
 
         # Define Settings Tab vars
         self.settings_pady = (10, 0)
@@ -48,17 +49,26 @@ class ControlPanel(tk.Tk):
         self.tabControl.pack(expand=1, fill="both")
 
         # Settings
-        self.filename = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/settings.json"
+        self.filename = os.path.join(os.path.dirname(__file__), "/settings.json")
         self.settings = self.load_settings()
 
         # Tkinter vars
-        self.sub_opt = tk.StringVar(value=self.settings["Subreddit"])
-        self.format_opt = tk.StringVar(value=self.settings["Video Format"])
-        self.gender_opt = tk.StringVar(value=self.settings["Voice Gender"])
-        self.accent_opt = tk.StringVar(value=self.settings["Voice Accent"])
-        self.v1 = tk.DoubleVar(value=self.settings["Comment Amount"])
-        self.v2 = tk.DoubleVar(value=self.settings["Post Amount"])
-        self.v3 = tk.DoubleVar(value=self.settings["Video Count"])
+        if self.filename:
+            self.sub_opt = tk.StringVar(value=self.settings["Subreddit"])
+            self.format_opt = tk.StringVar(value=self.settings["Video Format"])
+            self.gender_opt = tk.StringVar(value=self.settings["Voice Gender"])
+            self.accent_opt = tk.StringVar(value=self.settings["Voice Accent"])
+            self.v1 = tk.DoubleVar(value=self.settings["Comment Amount"])
+            self.v2 = tk.DoubleVar(value=self.settings["Post Amount"])
+            self.v3 = tk.DoubleVar(value=self.settings["Video Count"])
+        else:
+            self.sub_opt = tk.StringVar(value=state["subreddit"])
+            self.format_opt = tk.StringVar(value=state["vid_format"])
+            self.gender_opt = tk.StringVar(value=state["voice_gender"])
+            self.accent_opt = tk.StringVar(value=state["voice_accent"])
+            self.v1 = tk.DoubleVar(value=state["comment_amt"])
+            self.v2 = tk.DoubleVar(value=state["post_amt"])
+            self.v3 = tk.DoubleVar(value=state["vid_amt"])
 
         # Build tabs
         self.build_generation_tab()
@@ -66,7 +76,7 @@ class ControlPanel(tk.Tk):
     
     def build_generation_tab(self):
         self.g_btn = ttk.Button(self.g_tab, text="Generate and Upload", command=self.generate_vid)
-        self.status = ttk.Label(self.g_tab, text=self.settings["Status"])
+        self.status = ttk.Label(self.g_tab, text="Ready")
 
         self.g_btn.pack()
         self.status.pack()
@@ -94,15 +104,14 @@ class ControlPanel(tk.Tk):
         accent.pack()
 
         if self.format_opt.get() == "Shorts":
-            comment_to = 10
+            comment_to = 25
             post_to = 10
         elif self.format_opt.get() == "Long Form":
-            comment_to = 50
+            comment_to = 100
             post_to = 100
 
         self.comment_slider = tk.Scale(self.settings_tab, variable=self.v1, from_=0, to=comment_to, orient="horizontal", command=self.get_comment_amt)
         self.post_slider = tk.Scale(self.settings_tab, variable=self.v2, from_=1, to=post_to, orient="horizontal", command=self.get_post_amt)
-        save_btn = tk.Button(self.settings_tab, text="Save Settings", command=self.save_settings)
 
         comment_label = ttk.Label(self.settings_tab, text="Comment Amount")
         comment_label.pack(pady=self.settings_pady)
@@ -111,7 +120,24 @@ class ControlPanel(tk.Tk):
         post_label = ttk.Label(self.settings_tab, text="Post Amount")
         post_label.pack(pady=self.settings_pady)
         self.post_slider.pack()
-        save_btn.pack()
+
+        client_id_label = ttk.Label(self.settings_tab, text="Client ID")
+        self.client_id = ttk.Entry(self.settings_tab)
+        client_id_label.pack(pady=self.settings_pady)
+        self.client_id.pack(pady=self.settings_pady)
+
+        client_secret_label = ttk.Label(self.settings_tab, text="Client Secret")
+        self.client_secret = ttk.Entry(self.settings_tab)
+        client_secret_label.pack(pady=self.settings_pady)
+        self.client_secret.pack(pady=self.settings_pady)
+
+        user_agent_label = ttk.Label(self.settings_tab, text="User Agent")
+        self.user_agent = ttk.Entry(self.settings_tab)
+        user_agent_label.pack(pady=self.settings_pady)
+        self.user_agent.pack(pady=self.settings_pady)
+
+        save_btn = tk.Button(self.settings_tab, text="Save Settings", command=self.save_settings)
+        save_btn.pack(pady=self.settings_pady)
 
     def load_settings(self):
         if not os.path.exists(self.filename):
@@ -123,7 +149,7 @@ class ControlPanel(tk.Tk):
                 "Voice Accent": self.voice_accents[0],
                 "Comment Amount": 0,
                 "Post Amount": 1,
-                "Video Count": 0
+                "Video Count": 1,
             }
             with open(self.filename, 'w+') as f:
                 json.dump(data, f, indent=4)
@@ -144,7 +170,7 @@ class ControlPanel(tk.Tk):
             "Voice Accent": self.accent_opt.get(),
             "Comment Amount": int(self.v1.get()),
             "Post Amount": int(self.v2.get()),
-            "Video Count": int(self.v3.get())
+            "Video Count": int(self.v3.get()),
         }
         with open(self.filename, 'w+') as f:
             json.dump(data, f, indent=4)
@@ -161,11 +187,10 @@ class ControlPanel(tk.Tk):
                         "vid_format": self.format_opt.get(),
                         "voice_gender": self.gender_opt.get(),
                         "voice_accent": self.accent_opt.get(),
-                        "comment_amt": int(self.v1.get()),
-                        "post_amt": int(self.v2.get())
+                        "comment_amt": int(self.v1.get())
                     })
 
-                    asyncio.run(generate(self.status))
+                    asyncio.run(generate(self.status, self.client_id.get().strip(), self.client_secret.get().strip(), self.user_agent.get().strip(), self.filename.removesuffix("settings.json")))
 
                     self.status.after(0, lambda: self.status.config(text="Generation complete."))
                     self.after(3000, lambda: self.status.config(text="Ready"))
@@ -212,4 +237,13 @@ class ControlPanel(tk.Tk):
     def run(self):
         self.mainloop()
 
-print(state)
+panel = ControlPanel()
+panel.run()
+
+vid = os.path.join(os.path.dirname(__file__), "vid.mp4")
+audio = os.path.join(os.path.dirname(__file__), "audio.mp3")
+
+if os.path.exists(vid):
+    os.remove(vid)
+if os.path.exists(audio):
+    os.remove(audio)
