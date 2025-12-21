@@ -9,18 +9,7 @@ import random
 from text_to_audio import get_tts_info, text_to_speech
 import time
 
-settings_filename = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/settings.json"
-shorts_folder = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/bg-footage/Shorts/"
-long_form_folder = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/bg-footage/Long-Form/"
-
-audio_file = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/audio.mp3"
-vid_file = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/vid.mp4"
-final_vid = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/video.mp4"
-vid_name = "vid"
-
-sub_file = f"portfolio-projects/ai-content-creator/data/sub-{vid_name}.en.srt"
-
-def get_bg_footage(status=None):
+def get_bg_footage(settings_filename, shorts_folder, long_form_folder, audio_file, vid_file, filename, status=None):
     if status:
         status.config(text="Getting Background Footage")
 
@@ -34,7 +23,7 @@ def get_bg_footage(status=None):
     else:
         bg_vid = long_form_folder + random.choice(os.listdir(long_form_folder))
 
-    mp3_len = MP3("E:/Desk/Programming/portfolio-projects/ai-content-creator/data/audio.mp3")
+    mp3_len = MP3(filename + "audio.mp3")
     mp3_len = float(mp3_len.info.length)
 
     mp4_len = float(get_mp4_len(bg_vid))
@@ -42,7 +31,7 @@ def get_bg_footage(status=None):
     # Get Clip from Background Footage
     start = round(random.uniform(0, mp4_len - mp3_len), 2)
     end = round(start+mp3_len, 2)
-    bgclip = VideoFileClip(bg_vid).subclipped(start, end)
+    bgclip = VideoFileClip(bg_vid).subclip(start, end)
     audioclip = AudioFileClip(audio_file)
     time.sleep(1)
 
@@ -53,29 +42,44 @@ def get_bg_footage(status=None):
     bgclip.audio = new_audioclip
     bgclip.write_videofile(vid_file, threads=8, preset="ultrafast")
 
-async def generate(status):
-    text, voice = get_tts_info(status)
-    await (text_to_speech(text, voice, status))
+async def generate(status, client_id, client_secret, user_agent, filename):
+    settings_filename = filename + "settings.json"
+    shorts_folder = filename + "bg-footage/Shorts/"
 
-    get_bg_footage(status)
-    get_subs(status)
+    long_form_folder = filename + "bg-footage/Long-Form/"
+
+    audio_file = filename + "audio.mp3"
+    vid_file = "vid.mp4"
+    final_vid = "video.mp4"
+    vid_name = "vid"
+
+    sub_file = f"sub-{vid_name}.en.srt"
+
+    text, voice = get_tts_info(client_id, client_secret, user_agent, status)
+    if text and voice:
+        await (text_to_speech(text, voice, status))
+
+        get_bg_footage(settings_filename, shorts_folder, long_form_folder, audio_file, vid_file, filename, status)
+        get_subs(status, audio_file, sub_file, final_vid, vid_file)
+    else:
+        return
 
 def get_mp4_len(filename):
     clip = VideoFileClip(filename)
     duration = clip.duration
     return duration
 
-def get_subs(status):
+def get_subs(status, audio_file, sub_file, final_vid, vid_file):
     segments = transcribe(audio_file, status)
-    sub_file = generate_subtitle_file(segments)
-    add_subtitle_to_vid(sub_file, status)
+    sub_file = generate_subtitle_file(segments, sub_file)
+    add_subtitle_to_vid(sub_file, status, final_vid, vid_file)
 
 def transcribe(audio, status=None):
     if status:
         status.config(text="Transcribing mp3 file")
     
     model = faster_whisper.WhisperModel("small", device="cpu", cpu_threads=8, compute_type="int8")
-    segments, info = model.transcribe(audio, beam_size=1)
+    segments, _ = model.transcribe(audio, beam_size=1)
 
     return list(segments)
 
@@ -92,8 +96,7 @@ def format_time(secs):
     formatted_time = f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
     return formatted_time
 
-def generate_subtitle_file(segments):
-    subtitle_file = sub_file
+def generate_subtitle_file(segments, sub_file):
     text = ""
 
     for index, segment in enumerate(segments):
@@ -105,12 +108,12 @@ def generate_subtitle_file(segments):
         text += f"{segment.text}\n"
         text += "\n"
     
-    with open(subtitle_file, "w") as f:
+    with open(sub_file, "w") as f:
         f.write(text)
 
-    return subtitle_file
+    return sub_file
 
-def add_subtitle_to_vid(subtitle_file, status):
+def add_subtitle_to_vid(subtitle_file, status, final_vid, vid_file):
     if status:
         status.config(text="Adding subtitles to video")
     
@@ -123,10 +126,3 @@ def add_subtitle_to_vid(subtitle_file, status):
     stream = ffmpeg.output(vid_stream, output_vid,
                            vf=f"subtitles={subtitle_file}")
     ffmpeg.run(stream, overwrite_output=True)
-
-if __name__ == "__main__":
-    if os.path.exists(vid_file):
-        os.remove(vid_file)
-
-    if os.path.exists(sub_file):
-        os.remove(sub_file)
