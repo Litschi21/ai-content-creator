@@ -1,11 +1,12 @@
 import asyncio
 import edge_tts
 import json
+import os
 from reddit_fetch import fetch_posts
 
-settings_filename = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/settings.json"
+settings_filename = os.path.join(os.path.dirname(__file__), "/settings.json")
 
-def get_tts_info(status=None):
+def get_tts_info(client_id, client_secret, user_agent, status=None):
     voices = {
     "en-AU-NatashaNeural": "Female",
     "en-AU-WilliamMultilingualNeural": "Male",
@@ -25,7 +26,7 @@ def get_tts_info(status=None):
             if gender == voice_gender:
                 final_voice = voice
 
-    comments, descriptions, titles = fetch_posts(status)
+    comments, descriptions, titles = fetch_posts(status, client_id, client_secret, user_agent)
 
     if not final_voice:
         final_voice = "en-US-RogerNeural"
@@ -51,20 +52,28 @@ def get_tts_info(status=None):
         posts.append(post)
         post = None
 
-    text = titles[0] + "\n" + "\n\n\n".join(posts)
-    print(text)
-    print(f"Length: {len(text)}")
+    try:
+        text = titles[0] + "\n" + "\n\n\n".join(posts)
 
-    split_text = text.split(" ")
-    for i, word in enumerate(split_text):
-        if word in abbreviations.keys():
-            split_text[i] = abbreviations.get(word)
+        print(text)
+        print(f"Length: {len(text)}")
 
-    text = " ".join(split_text)
-    return text, final_voice
+        split_text = text.split(" ")
+        for i, word in enumerate(split_text):
+            if word in abbreviations.keys():
+                split_text[i] = abbreviations.get(word)
+
+        text = " ".join(split_text)
+
+        return text, final_voice
+    except IndexError:
+        if status:
+            status.config(text="Could not fetch posts from Subreddit. Try changing Subreddit or check credentials.")
+        
+        return None, None
 
 async def text_to_speech(text, voice, status=None):
-    filename = "E:/Desk/Programming/portfolio-projects/ai-content-creator/data/audio.mp3"
+    filename = os.path.dirname(__file__) + "audio.mp3"
 
     if status:
         status.config(text="Creating mp3 file")
@@ -76,9 +85,9 @@ abbreviations = {
     "AITA": "Am I the Asshole",
     "TIL": "Today I learned",
     "AIO": "Am I Overreacting",
-    "idk": "I don\"t know",
-    "idc": "I don\"t care",
-    "idgaf": "I don\"t give a fuck",
+    "idk": "I don't know",
+    "idc": "I don't care",
+    "idgaf": "I don't give a fuck",
     "brb": "be right back",
     "btw": "by the way",
     "imo": "in my opinion",
@@ -96,7 +105,7 @@ abbreviations = {
     "dm": "direct message",
     "jk": "just kidding",
     "msg": "message",
-    "yw": "you\"re welcome"
+    "yw": "you're welcome"
 }
 
 accent = "American"
@@ -118,7 +127,3 @@ accent_to_voice = {
     "Canadian": "en-CA",
     "Irish": "en-IE"
 }
-
-if __name__ == "__main__":
-    text, voice = get_tts_info()
-    asyncio.run(text_to_speech(text, voice))
