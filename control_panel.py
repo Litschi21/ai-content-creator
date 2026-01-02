@@ -49,7 +49,7 @@ class ControlPanel(tk.Tk):
         self.tabControl.pack(expand=1, fill="both")
 
         # Settings
-        self.filename = os.path.join(os.path.dirname(__file__), "/settings.json")
+        self.filename = os.path.join(os.path.dirname(__file__), "settings.json")
         self.settings = self.load_settings()
 
         # Tkinter vars
