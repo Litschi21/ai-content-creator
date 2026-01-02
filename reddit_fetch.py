@@ -2,7 +2,7 @@ import json
 import os
 import praw
 
-filename = os.path.join(os.path.dirname(__file__), "/settings.json")
+filename = os.path.join(os.path.dirname(__file__), "settings.json")
 
 def load_settings():
     with open(filename, "r") as f:
