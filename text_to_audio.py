@@ -4,7 +4,7 @@ import json
 import os
 from reddit_fetch import fetch_posts
 
-settings_filename = os.path.join(os.path.dirname(__file__), "/settings.json")
+settings_filename = os.path.join(os.path.dirname(__file__), "settings.json")
 
 def get_tts_info(client_id, client_secret, user_agent, status=None):
     voices = {
